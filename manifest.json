@@ -1,0 +1,42 @@
+{
+    "manifest_version": 2,
+    "name": "Course Register",
+    "description": "This extension helps students of HCMUTE get out of hell called 'Course Registration'.",
+    "version": "1.0",
+    "author": "Lyo Nguyen",
+    "icons": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+    },
+    "background": {
+        "scripts": [
+            "background.js"
+        ],
+        "persistent": false
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://dkmh.hcmute.edu.vn/*"
+            ],
+            "js": [
+                "content.js"
+            ]
+        }
+    ],
+    "page_action": {
+        "default_popup": "popup.html",
+        "default_title": "Click me bae!"
+    },
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "storage",
+        "declarativeContent",
+        "notifications"
+    ],
+    "web_accessible_resources": [
+        "icon16.png"
+    ]
+}

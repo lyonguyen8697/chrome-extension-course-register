@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-var registerControl;
+var currentTab;
 var registerInterval = 200;
 
 function getCurrentTab(callback) {
@@ -50,8 +50,8 @@ function createRegisterList(registers) {
   var list = document.getElementById('register-list');
   removeAllChilds(list);
 
-  registers.forEach((value, key) => {
-    let item = createRegisterItem(key, value);
+  registers.forEach(value => {
+    let item = createRegisterItem(value);
     list.appendChild(item);
   });
 
@@ -68,20 +68,28 @@ function createButton(clazz, html, handler) {
   return button;
 }
 
-function createRegisterItem(course, register) {
-  let pauseBtn = createButton('btn-pause', '&#10073;&#10073;', () => stopRegister(course));
-  let resumeBtn = createButton('btn-resume', '&#9654;', () => startRegister(course));
-  let removeBtn = createButton('btn-remove', '&times', () => removeRegister(course));
+function createRegisterItem(info) {
+  let pauseBtn = createButton('btn-pause', '&#10073;&#10073;', () => stopRegister(info.course));
+  let resumeBtn = createButton('btn-resume', '&#9654;', () => startRegister(info.course));
+  let removeBtn = createButton('btn-remove', '&times', () => removeRegister(info.course));
 
   let item = document.createElement('li');
   item.classList.add('register-item');
-  if (register.result) {
+  if (info.result) {
     item.classList.add('register-item-success')
   }
-  if (register.paused) {
+  if (info.paused) {
     item.classList.add('register-item-paused');
   }
-  item.innerText = `Course: ${course} try: ${register.try} ${register.result ? 'success' : ''} ${register.paused ? 'paused' : ''}`;
+  item.innerHTML = 
+  `
+  <span class="register-info">[${info.class}] ${info.courseName}</span>
+  <span class="register-info">Lecturer: ${info.lecturer}</span>
+  <span class="register-info">Schedule: ${info.schedule}</span>
+  <span class="register-info">Status: ${info.result ? 'Registered' : info.paused ? 'Paused' : 'Running'} Try: ${info.try}</span>
+  <span class="register-info">Last message: ${info.message || 'None'}</span>
+  `;
+  //item.innerText = `${info.class} ${info.courseName} ${info.lecturer} ${info.schedule} | try: ${info.try} ${info.result ? 'Registered' : info.paused ? 'Paused' : ''}`;
 
   item.appendChild(pauseBtn);
   item.appendChild(resumeBtn);
@@ -96,19 +104,14 @@ function removeAllChilds(node) {
   }
 }
 
-function initConnection(id) {
-  registerControl = chrome.tabs.connect(id, { name: 'registerControl' });
-
-}
-
-function getSavedRegisterLogs(id, callback) {
-  chrome.storage.local.get(id.toString(), items => {
-    callback(chrome.runtime.lastError ? null : items[id]);
+function getSavedRegisterLogs(callback) {
+  chrome.storage.local.get(currentTab.id.toString(), items => {
+    callback(chrome.runtime.lastError ? null : items[currentTab.id]);
   });
 }
 
-function loadSavedData(id) {
-  getSavedRegisterLogs(id, logs => {
+function loadSavedData() {
+  getSavedRegisterLogs(logs => {
     if (logs) {
       registerInterval = logs.interval;
       let registers = new Map(logs.registers)
@@ -131,7 +134,7 @@ function onIntervalChanged() {
 
   if (interval != registerInterval) {
     registerInterval = interval;
-    registerControl.postMessage({ action: 'interval', interval: registerInterval });
+    chrome.tabs.sendMessage(currentTab.id, { action: 'interval', interval: registerInterval });
   }
 }
 
@@ -145,31 +148,25 @@ function ajustFunctionButton(registers) {
   registers = [...registers.values()];
 
   document.getElementById('btn-stop-all').disabled = !registers.some(value => !value.paused);
-  document.getElementById('btn-resume-all').disabled = !registers.some(value => value.paused && !value.result);  
+  document.getElementById('btn-resume-all').disabled = !registers.some(value => value.paused && !value.result);
 }
 
 function stopRegister(course) {
-  if (registerControl) {
-    registerControl.postMessage({ action: 'stop', course: course });
-  }
+  chrome.tabs.sendMessage(currentTab.id, { action: 'stop', course: course });
 }
 
 function startRegister(course) {
-  if (registerControl) {
-    registerControl.postMessage({ action: 'start', course: course });
-  }
+  chrome.tabs.sendMessage(currentTab.id, { action: 'start', course: course });
 }
 
 function removeRegister(course) {
-  if (registerControl) {
-    registerControl.postMessage({ action: 'remove', course: course });
-  }
+  chrome.tabs.sendMessage(currentTab.id, { action: 'remove', course: course });
 }
 
-function registerOnStorageChanged(id) {
+function registerOnStorageChanged() {
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName == 'local' && changes[id]) {
-      let registers = new Map(changes[id].newValue.registers);
+    if (areaName == 'local' && changes[currentTab.id]) {
+      let registers = new Map(changes[currentTab.id].newValue.registers);
       createRegisterList(registers);
       ajustFunctionButton(registers);
     }
@@ -182,22 +179,30 @@ function registerTemplateEvent() {
   document.getElementById('btn-resume-all').onclick = () => startRegister();
 }
 
-function registerEvent(id) {
-  registerOnStorageChanged(id);
+function registerEvent() {
+  registerOnStorageChanged();
   registerTemplateEvent();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function run() {
   getCurrentTab(tab => {
+    if (tab) {
+      currentTab = tab;
 
-    isLogin(tab.id, result => {
-      if (result) {
-        loadSavedData(tab.id);
-        initConnection(tab.id);
-        registerEvent(tab.id);
-        displayUserInfo();
-        showContent();
-      }
-    })
+      isLogin(tab.id, result => {
+        if (result) {
+          loadSavedData();
+          registerEvent();
+          displayUserInfo();
+          showContent();
+        }
+      });
+    } else {
+      document.getElementById('message').innerText = 'Error! Reopen this tab to fix this problem';
+    }
   });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  run();
 });

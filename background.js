@@ -20,16 +20,26 @@ chrome.runtime.onInstalled.addListener(function () {
         ]);
     });
 
+    /* chrome.webNavigation.onErrorOccurred.addListener(details => {
+        if (details.frameId == 0) {
+            chrome.tabs.reload(details.tabId);
+            console.log(details.url + ' ' + details.tabId);
+        }
+    },
+        { urls: { hostEquals: 'dkmh.hcmute.edu.vn', schemes: ['https', 'http'] } }); */
+    // Remove data when navigate out.
     chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
         if (changeInfo.url && !changeInfo.url.includes('://dkmh.hcmute.edu.vn')) {
             chrome.storage.local.remove(tabId.toString());
         }
-    })
+    });
 
+    // Remove data when the page is closed.
     chrome.tabs.onRemoved.addListener(tabId => {
         chrome.storage.local.remove(tabId.toString());
     });
 
+    // Listen to request
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         switch (request.action) {
             case 'tab-info':
@@ -38,6 +48,8 @@ chrome.runtime.onInstalled.addListener(function () {
             case 'notification':
                 chrome.notifications.create(request.option);
                 break;
+            case 'register':
+                chrome.tabs.sendMessage(request.tab, { action: request.action, info: request.info });
             default:
                 break;
         }

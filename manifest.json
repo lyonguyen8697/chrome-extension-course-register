@@ -13,15 +13,30 @@
         "scripts": [
             "background.js"
         ],
-        "persistent": false
+        "persistent": true
     },
     "content_scripts": [
         {
             "matches": [
                 "*://dkmh.hcmute.edu.vn/*"
             ],
+            "exclude_matches": [
+                "*://dkmh.hcmute.edu.vn/DangKiNgoaiKeHoach/*",
+                "*://dkmh.hcmute.edu.vn/DangKiNgoaiKeHoachPhanNhom/*",
+                "*://dkmh.hcmute.edu.vn/DangKiTre/*"
+            ],
             "js": [
                 "content.js"
+            ]
+        },
+        {
+            "matches": [
+                "*://dkmh.hcmute.edu.vn/DangKiNgoaiKeHoach/*",
+                "*://dkmh.hcmute.edu.vn/DangKiNgoaiKeHoachPhanNhom/*",
+                "*://dkmh.hcmute.edu.vn/DangKiTre/*"
+            ],
+            "js": [
+                "register-page-content.js"
             ]
         }
     ],
@@ -34,7 +49,9 @@
         "tabs",
         "storage",
         "declarativeContent",
-        "notifications"
+        "notifications",
+        "webNavigation",
+        "*://dkmh.hcmute.edu.vn/"
     ],
     "web_accessible_resources": [
         "icon16.png"

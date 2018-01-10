@@ -17,6 +17,7 @@
     -->
   <script src="popup.js"></script>
 </head>
+
 <body>
   <div id="container">
     <h1 id="message" class="title">You must loging in first</h1>
@@ -26,17 +27,19 @@
       <ul id="register-list">
       </ul>
       <div id="func-panel">
-        <select id="select-interval">
-          <option value="0" hidden selected>Interval 200ms</option>
-          <option value="50">50ms - Caution</option>
-          <option value="100">100ms</option>
-          <option value="200">200ms  - Recommend</option>
-          <option value="300">300ms</option>
-          <option value="500">500ms</option>
-          <option value="1000">1s</option>
-          <option value="2000">2s</option>
-          <option value="5000">5s - For lucky</option>
-        </select>
+        <div class="width-100">
+          <select id="select-interval">
+            <option value="0" hidden selected>Interval 200ms</option>
+            <option value="50">50ms - Caution</option>
+            <option value="100">100ms</option>
+            <option value="200">200ms - Recommend</option>
+            <option value="300">300ms</option>
+            <option value="500">500ms</option>
+            <option value="1000">1s</option>
+            <option value="2000">2s</option>
+            <option value="5000">5s - For lucky</option>
+          </select>
+        </div>
         <button id="btn-resume-all" class="btn" disabled>&#9654; Resume</button>
         <button id="btn-stop-all" class="btn" disabled>&#10073;&#10073; Stop</button>
       </div>

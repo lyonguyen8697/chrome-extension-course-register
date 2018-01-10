@@ -6,106 +6,122 @@ var currentTab;
 var registers = new Map();
 var registerInterval = 200;
 
-function registerCourse(course, callback) {
-  if (Math.random() * 100 < 5) {
-    callback(true);
-  } else {
-    callback(false);
-  }
-  //console.log('Register course: ' + course + '  try: ' + registers.get(course).try + (registers.get(course).result ? '  success' : ''));
+function printProccess(course) {
+  let item = registers.get(course);
+  console.log(`course: ${item.course} class: ${item.class} try: ${item.try} result: ${item.result}`);
 }
 
-function register(course, callback) {
-  let item = registers.get(course);
-  registerCourse(course, result => {
+function sendRegisterRequest(info, callback) {
+  let xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function () {
+    if (this.readyState != 4) {
+      return;
+    }
+    if (this.status != 200) {
+      callback(false, this.statusText);
+      return;
+    }
+    if (this.responseText.trim() == 'Đăng ký thành công...') {
+      callback(true, this.responseText);
+      return;
+    }
+    callback(false, this.responseText);
+  }
+  xhttp.open('GET', `DangKiHocPhan?StudyUnitID=${info.student}&CurriculumID=${info.course}&Hide=${info.hideval}&t=${Math.random()}`, true);
+  xhttp.send();
+  printProccess(info.course);
+}
+
+function register(info, callback) {
+  let item = registers.get(info.course);
+  sendRegisterRequest(info, (result, message) => {
     if (result) {
       item.paused = true;
       item.result = true;
     }
-    callback(result);
+    item.message = message;
+    callback(item);
   });
   item.try = item.try + 1;
 }
 
-function registerLoop(course, interval, begin, complete) {
-  let id = setInterval(() => {
-    register(course, result => {
-      if (result) {
-        clearInterval(id);
+function registerLoop(info, interval, begin, complete) {
+  let intervalId = setInterval(() => {
+    register(info, result => {
+      if (result.result) {
+        clearInterval(intervalId);
       }
       complete(result);
     });
     begin(item);
   }, interval);
 
-  let item = registers.get(course);
+  let item = registers.get(info.course);
   if (item) {
     if (!item.paused) {
-      stopRegisterLoop(course);
+      stopRegisterLoop(item);
     }
-    item.id = id;
+    item.intervalId = intervalId;
     item.paused = false;
   } else {
-    registers.set(course, { id: id, try: 0, result: false, paused: false });
+    registers.set(info.course, Object.assign(info, { intervalId: intervalId, try: 0, result: false, paused: false }));
   }
 
-  register(course, result => {
-    if (result) {
-      clearInterval(id);
+  register(info, result => {
+    if (result.result) {
+      clearInterval(intervalId);
     }
     complete(result);
   });
   begin(item);
 }
 
-function startRegisterLoop(course) {
-  if (course) {
-    registerLoop(course, registerInterval,
-      item => {
+function startRegisterLoop(info) {
+  if (info) {
+    registerLoop(info, registerInterval,
+      () => {
         saveRegisterLogs(currentTab.id);
       },
       result => {
         if (result.result) {
           saveRegisterLogs(currentTab.id);
-          showNotification(course, result.try);
+          showNotification(result);
         }
       });
   }
 }
 
-function stopRegisterLoop(course) {
-  if (course) {
-    let item = registers.get(course);
-    clearInterval(item.id);
-    item.paused = true;
+function stopRegisterLoop(info) {
+  if (info) {
+    clearInterval(info.intervalId);
+    info.paused = true;
   } else {
     registers.forEach(value => {
-      clearInterval(value.id);
+      clearInterval(value.intervalId);
       value.paused = true;
     });
   }
   saveRegisterLogs(currentTab.id);
 }
 
-function resumeRegisterLoop(course) {
-  if (course) {
-    let item = registers.get(course);
-    if (item.paused && !item.result) {
-      startRegisterLoop(course);
+function resumeRegisterLoop(info) {
+  if (info) {
+    if (info.paused && !info.result) {
+      startRegisterLoop(info);
     }
   } else {
     registers.forEach((value, key) => {
       if (value.paused && !value.result) {
-        startRegisterLoop(key);
+        startRegisterLoop(value);
       }
     });
   }
 }
 
-function removeRegitserLoop(course) {
-  if (course) {
-    clearInterval(registers.get(course).id);
-    registers.delete(course);
+function removeRegitserLoop(info) {
+  if (info) {
+    clearInterval(info.intervalId);
+    registers.delete(info.course);
   } else {
     registers.clear();
   }
@@ -117,7 +133,7 @@ function onIntervalChanged(interval) {
     registerInterval = interval;
     registers.forEach((value, key) => {
       if (!value.result) {
-        startRegisterLoop(key);
+        startRegisterLoop(value);
       }
     });
     saveRegisterLogs(currentTab.id);
@@ -143,7 +159,7 @@ function loadSavedData() {
       registers = new Map(logs.registers);
       registers.forEach((value, key) => {
         if (!value.result && !value.paused) {
-          startRegisterLoop(key);
+          startRegisterLoop(value);
         }
       });
     }
@@ -151,24 +167,25 @@ function loadSavedData() {
 }
 
 function isLogin() {
-  return document.getElementsByClassName("menu2")[0].childElementCount != 0;
+  let node = document.getElementsByClassName('menu2')[0];
+  if (node) {
+    return node.childElementCount != 0;
+  }
+  return false;
 }
 
-function registerButtonClicked(event) {
-  event.preventDefault();
+function registerButtonClicked(info) {
   if (currentTab) {
-    var course = Math.floor(Math.random() * 1000);
-
-    startRegisterLoop(course);
+    startRegisterLoop(info);
   }
 }
 
-function showNotification(course, tryTimes) {
+function showNotification(info) {
   let option = {
     type: 'basic',
-    title: `Course: ${course} has registered!`,
-    message: `Register success in ${tryTimes} try.`,
-    iconUrl: 'icon.png'
+    title: `Course: ${info.courseName} has registered!`,
+    message: `Info ${info.class} ${info.lecturer} ${info.schedule}. Registered in ${info.try} try at ${new Date().toLocaleTimeString()}.`,
+    iconUrl: 'icon128.png'
   }
   chrome.runtime.sendMessage({ action: 'notification', option: option });
 }
@@ -179,64 +196,58 @@ function getCurrentTab(callback) {
   })
 }
 
-function createRegisterButton(container) {
-  let template =
-    `<a href="javascript:void(0)" class="register-button l-btn" style="margin-left: 10px;">
-        <span class="l-btn-left" style="display: flex">
-          <img src="${chrome.extension.getURL('icon16.png')}" width="16px" height="16px">
-          <span class="l-btn-text">Auto</span>
-        </span>
-    </a>`;
-  container.insertAdjacentHTML('beforeend', template);
-  container.style.display = 'flex';
-  container.style.justifyContent = 'center';
-  container.getElementsByClassName('register-button')[0].onclick = registerButtonClicked;
-}
-
-function findPopupAlert(callback) {
-  let text = 'Hiện tại không nằm trong thời hạn đăng ký học phần';
-  for (let container of document.getElementsByClassName('messager-button')) {
-    if (container
-      && container.parentNode.childNodes[1].innerText.trim() == text
-      && !container.getElementsByClassName('register-button')[0]) {
-      callback(container);
+function overridePopupWindowFunction() {
+  let code =
+    `function PopupDanhSachLop(StudyUnitID, CurriculumID) {
+      let w = window.open(AddressUrl + '/' + 'DangKiNgoaiKeHoach/DanhSachLopHocPhan/' + StudyUnitID + "?CurriculumID=" + CurriculumID + "&t=" + Math.random(), '_blank', 'scrollbars=1,status=1,width=800,height=600,');
+      w.tabId = ${currentTab.id};
     }
-  }
-  setTimeout(() => findPopupAlert(callback), 100);
+    function PopupDanhSachLopTheoNhom(StudyUnitID, CurriculumID) {
+      let w = window.open(AddressUrl + '/' + 'DangKiNgoaiKeHoachPhanNhom/DanhSachLopHocPhanTheoNhom/' + StudyUnitID + "?CurriculumID=" + CurriculumID + "&t=" + Math.random(), '_blank', 'scrollbars=1,status=1,width=800,height=600,');
+      w.tabId = ${currentTab.id};
+
+    }
+    function PopupDanhSachLopDKT(StudyUnitID , ScheduleStudyUnit) {
+      let w = window.open(AddressUrl + '/' + 'DangKiTre/index/?StudyUnitID=' + StudyUnitID + "&ScheduleStudyUnit=" + ScheduleStudyUnit + "&t=" + Math.random(), '_blank', 'scrollbars=1,status=1,width=900,height=600,');
+      w.tabId = ${currentTab.id};
+
+    }`
+  let script = document.createElement('script');
+  script.innerText = code;
+  document.body.appendChild(script);
 }
 
-function run() {
-
+function listenToRequest() {
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     switch (request.action) {
       case 'is-login':
         sendResponse({ login: isLogin() });
         break;
+      case 'register':
+        registerButtonClicked(request.info);
+        console.log(request.info);
+        break;
+      case 'stop':
+        stopRegisterLoop(registers.get(request.course));
+        break;
+      case 'start':
+        resumeRegisterLoop(registers.get(request.course));
+        break;
+      case 'remove':
+        removeRegitserLoop(registers.get(request.course));
+        break;
+      case 'interval':
+        onIntervalChanged(request.interval);
+        break;
       default:
         break;
     }
   });
+}
 
-  chrome.runtime.onConnect.addListener(port => {
-    port.onMessage.addListener(message => {
-      switch (message.action) {
-        case 'stop':
-          stopRegisterLoop(message.course);
-          break;
-        case 'start':
-          resumeRegisterLoop(message.course);
-          break;
-        case 'remove':
-          removeRegitserLoop(message.course);
-          break;
-        case 'interval':
-          onIntervalChanged(message.interval);
-          break;
-        default:
-          break;
-      }
-    });
-  });
+function run() {
+
+  listenToRequest();
 
   getCurrentTab(tab => {
     currentTab = tab;
@@ -246,9 +257,9 @@ function run() {
     } else {
       chrome.storage.local.remove(currentTab.id.toString());
     }
-  });
 
-  findPopupAlert(createRegisterButton);
+    overridePopupWindowFunction();
+  });
 }
 
 /**

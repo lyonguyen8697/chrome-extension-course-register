@@ -1,0 +1,22 @@
+{
+  "name": "course-register",
+  "version": "1.0.0",
+  "description": "This extension helps students of HCMUTE get out of hell called 'Course Registration'.",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lyonguyen8697/chrome-extension-course-register.git"
+  },
+  "author": "lyo nguyen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lyonguyen8697/chrome-extension-course-register/issues"
+  },
+  "homepage": "https://github.com/lyonguyen8697/chrome-extension-course-register#readme",
+  "devDependencies": {
+    "eslint-config-google": "^0.9.1"
+  }
+}

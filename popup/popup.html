@@ -1,0 +1,50 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+
+<head>
+  <title>Getting Started Extension's Popup</title>
+  <link rel="stylesheet" href="popup.css">
+  <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+    -->
+  <script src="popup.js"></script>
+</head>
+
+<body>
+  <div id="container">
+    <h1 id="alert-message" class="title">You must loging in first</h1>
+    <div id="register-panel" hidden>
+      <h1 id="user-info" class="title">Nope</h1>
+      <p id="place-holder">Find auto button to use this :)</p>
+      <ul id="register-list">
+      </ul>
+      <div id="func-panel">
+        <div class="width-100">
+          <select id="select-interval">
+            <option value="0" hidden selected>Interval 200ms</option>
+            <option value="50">50ms - Caution</option>
+            <option value="100">100ms</option>
+            <option value="200">200ms - Recommend</option>
+            <option value="300">300ms</option>
+            <option value="500">500ms</option>
+            <option value="1000">1s</option>
+            <option value="2000">2s</option>
+            <option value="5000">5s - For lucky</option>
+          </select>
+        </div>
+        <button id="btn-resume-all" class="btn" disabled>&#9654; Resume</button>
+        <button id="btn-stop-all" class="btn" disabled>&#10073;&#10073; Stop</button>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

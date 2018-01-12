@@ -5,9 +5,9 @@
     "version": "1.0",
     "author": "Lyo Nguyen",
     "icons": {
-        "16": "icon16.png",
-        "48": "icon48.png",
-        "128": "icon128.png"
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
     },
     "background": {
         "scripts": [
@@ -26,22 +26,23 @@
                 "*://dkmh.hcmute.edu.vn/DangKiTre/*"
             ],
             "js": [
-                "content.js"
+                "main-content.js"
             ]
         },
         {
             "matches": [
                 "*://dkmh.hcmute.edu.vn/DangKiNgoaiKeHoach/*",
                 "*://dkmh.hcmute.edu.vn/DangKiNgoaiKeHoachPhanNhom/*",
-                "*://dkmh.hcmute.edu.vn/DangKiTre/*"
+                "*://dkmh.hcmute.edu.vn/DangKiTre/*",
+                "*://dkmh.hcmute.edu.vn/DangkiKhac*"
             ],
             "js": [
-                "register-page-content.js"
+                "dom-handler-content.js"
             ]
         }
     ],
     "page_action": {
-        "default_popup": "popup.html",
+        "default_popup": "popup/popup.html",
         "default_title": "Click me bae!"
     },
     "permissions": [
@@ -54,6 +55,6 @@
         "*://dkmh.hcmute.edu.vn/"
     ],
     "web_accessible_resources": [
-        "icon16.png"
+        "icons/icon16.png"
     ]
 }

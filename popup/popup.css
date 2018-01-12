@@ -1,0 +1,179 @@
+html {
+    font-size: 14px;
+}
+
+body {
+    white-space: nowrap;
+    margin: 0;
+}
+
+#container {
+    padding: 10px 0px 10px 0px;
+}
+
+.title {
+    font-size: 1rem;
+    margin: 0;
+    padding: 0px 15px 0px 15px;
+    text-align: center;
+}
+
+#register-list {
+    list-style-type: none;
+    margin: 10px 0px 10px 0px;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 500px;
+}
+
+.register-item {
+    position: relative;
+    font-size: 1rem;
+    padding: 10px 15px 10px 15px;
+}
+
+.register-item:hover {
+    background-color: rgb(158, 255, 223);
+    cursor: pointer;
+}
+
+.register-item-paused {
+    background-color: rgb(252, 190, 76);
+}
+
+.register-item-success {
+    background-color: rgb(125, 218, 125);
+}
+
+.register-item-success:hover {
+    background-color: rgb(81, 211, 81);
+}
+
+.register-item > .register-info {
+    display: block;
+}
+
+.register-item > span:first-child {
+    font-weight: bold;
+}
+
+.btn-inline {
+    position: absolute;
+    top: 0;
+    height: 40px;
+    width: 40px;
+    display: none;
+    font-size: 1.5rem;
+    font-weight: bolder;
+    text-align: center;
+    line-height: 2.4rem;
+}
+
+.btn-pause {
+    right: 40px;
+    color: orange;
+}
+
+.btn-pause:hover {
+    background-color: orange;
+    color: white;
+}
+
+.btn-resume {
+    right: 40px;
+    font-size: 1.1rem;
+    color: rgb(77, 77, 224);
+}
+
+.btn-resume:hover {
+    background-color: rgb(77, 77, 224);
+    color: white;
+}
+
+.btn-remove {
+    right: 0;
+    color: rgb(255, 86, 86);
+}
+
+.btn-remove:hover {
+    background-color: rgb(255, 86, 86);
+    color: white;
+}
+
+.register-item:hover > .btn-remove {
+    display: block;
+}
+
+.register-item:not(.register-item-paused):not(.register-item-success):hover > .btn-pause {
+    display: block;
+}
+
+.register-item-paused:not(.register-item-success):hover > .btn-resume {
+    display: block;
+}
+
+#place-holder {
+    color: gray;
+    font-size: 1rem;
+    text-align: center;
+    margin: 0;
+    padding: 10px 15px 10px 15px;
+}
+
+#func-panel {
+    display: flex;
+    padding: 0px 10px 0px 10px;
+}
+
+.btn {
+    font-size: 1rem;
+    border-radius: 0.3rem;
+    margin-left: 10px;
+    padding: 5px 10px 5px 10px;
+    color: white;
+}
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.btn:disabled {
+    cursor: auto;
+    opacity: 0.6;
+}
+
+#btn-stop-all {
+    border: 1px solid rgb(252, 69, 69);
+    background-color: rgb(252, 69, 69);    
+}
+
+#btn-resume-all {
+    border: 1px solid rgb(77, 77, 224);
+    background-color: rgb(77, 77, 224);
+}
+
+#select-interval {
+    font-size: 1rem;
+    border: 1px solid rgb(69, 194, 69);
+    border-radius: 0.3rem;
+    background-color: rgb(69, 194, 69);
+    color: white;
+    -webkit-appearance: none;
+    padding: 5px 10px 5px 10px;
+    width: 130px;
+    text-align-last: center;
+}
+
+#select-interval:hover {
+    cursor: pointer;
+}
+
+#select-interval * {
+    background-color: white;
+    color: black;
+}
+
+.width-100 {
+    width: 100%;
+}

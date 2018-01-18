@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Course Register",
     "description": "This extension helps students of HCMUTE get out of hell called 'Course Registration'.",
-    "version": "1.0",
+    "version": "1.1",
     "author": "Lyo Nguyen",
     "icons": {
         "16": "icons/icon16.png",

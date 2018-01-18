@@ -28,7 +28,7 @@
   var currentTab;
 
   /**
-   * Contain the register information of courses with the key is the course id.
+   * Contain the register information of classes with the key is the class id.
    *
    * @type {Map.<string, RegisterInfo>}
    */
@@ -40,7 +40,7 @@
   var registerInterval = 200;
 
   /**
-   * Contain the last message of courses with the key is the course id.
+   * Contain the last message of classes with the key is the class id.
    * @type {Map.<string, string>}
    */
   var lastMessage = new Map();
@@ -56,6 +56,11 @@
   const alreadyRegisteredMessage = 'đã đăng ký';
 
   /**
+   * Message of registered.
+   */
+  const registeredMessage = Object.freeze([successfulRegisterMessage, alreadyRegisteredMessage]);
+
+  /**
    * Print the message if it different to previous.
    * 
    * @param  {string} message The last message
@@ -63,9 +68,9 @@
    */
   function printMessage(message, info) {
     message = message.trim();
-    if (lastMessage.get(info.course) != message) {
-      lastMessage.set(info.course, message);
-      console.log(`Message: ${message} Course: ${info.courseName} Try: ${info.try}`);
+    if (lastMessage.get(info.class) != message) {
+      lastMessage.set(info.class, message);
+      console.log(`Message: ${message} Class: [${info.class}] ${info.courseName} Try: ${info.try}`);
     }
   }
 
@@ -108,14 +113,11 @@
    * @returns {boolean}
    */
   function isRegistered(message) {
-    if (message.includes(successfulRegisterMessage) || message.includes(alreadyRegisteredMessage)) {
-      return true;
-    }
-    return false;
+    return registeredMessage.some(value => message.includes(value));
   }
 
   /**
-   *  Register and update course for given information.
+   *  Register and update the given register information.
    * 
    * @param  {RegisterInfo} info Register information.
    * @param  {function(boolean)} callback Called with the result of the register on request complete.
@@ -123,7 +125,7 @@
   function register(info, callback) {
     sendRegisterRequest(info, (result, message) => {
 
-      // Request successful and registerd.
+      // Request successful and registered.
       if (result && isRegistered(message)) {
         info.result = true;
       }
@@ -193,6 +195,8 @@
         // On begin.
         () => {
           saveRegisterLogs(currentTab.id);
+
+          // Show begin notification on the first try.
           if (info.try == 1) {
             showRegisterBeginNotification(info);
           }
@@ -201,6 +205,14 @@
         //On complete.
         result => {
           if (result) {
+
+            // Stop all register's loop that have same course.
+            registers.forEach(value => {
+              if (value != info && value.course == info.course) {
+                stopRegisterLoop(value);
+              }
+            });
+
             saveRegisterLogs(currentTab.id);
             showSuccessfulNotification(info);
           }
@@ -260,6 +272,7 @@
 
   /**
    * Remove the register's loop for the given information, or all loop if not given the parameter.
+   * 
    * @param {RegisterInfo} info 
    */
   function removeRegisterLoop(info) {
@@ -267,7 +280,7 @@
     // Closure function for less code.
     function removeRegisterLoopClosureFn(param) {
       clearInterval(param.intervalId);
-      registers.delete(param.course);
+      registers.delete(param.class);
     }
 
     // Remove one.
@@ -295,8 +308,8 @@
 
       registers.forEach(value => {
 
-        // Start only unsuccessful register's loop.
-        if (!value.result) {
+        // Start only unsuccessful and not paused register's loop.
+        if (!value.result && !value.paused) {
           startRegisterLoop(value);
         }
       });
@@ -356,12 +369,12 @@
    * @returns {RegisterInfo}
    */
   function getOrCreateRegisterInfo(info) {
-    let item = registers.get(info.course);
+    let item = registers.get(info.class);
     if (item) {
       return item;
     } else {
       item = Object.assign(info, { try: 0, result: false, paused: false });
-      registers.set(item.course, item);
+      registers.set(item.class, item);
       return item;
     }
   }
@@ -486,8 +499,8 @@
           startRegisterLoop(info);
           break;
         case 'stop':
-          if (request.course) {
-            let info = registers.get(request.course);
+          if (request.class) {
+            let info = registers.get(request.class);
             if (info) {
               stopRegisterLoop(info);
             }
@@ -496,8 +509,8 @@
           }
           break;
         case 'start':
-          if (request.course) {
-            let info = registers.get(request.course);
+          if (request.class) {
+            let info = registers.get(request.class);
             if (info) {
               resumeRegisterLoop(info);
             }
@@ -506,8 +519,8 @@
           }
           break;
         case 'remove':
-          if (request.course) {
-            let info = registers.get(request.course);
+          if (request.class) {
+            let info = registers.get(request.class);
             if (info) {
               removeRegisterLoop(info);
             }

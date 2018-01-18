@@ -28,7 +28,7 @@
   var currentTab;
 
   /**
-   * Contain the register information of courses with the key is the course id.
+   * Contain the register information of classes with the key is the class id.
    *
    * @type {Map.<string, RegisterInfo>}
    */
@@ -146,21 +146,21 @@
       tagName: 'span',
       className: 'btn-inline btn-pause',
       inner: '&#10073;&#10073;',
-      attributes: [{ name: 'data-course', value: info.course }],
+      attributes: [{ name: 'data-class', value: info.class }],
       onclick: onStopButtonClicked
     });
     let resumeBtn = createHTMLElement({
       tagName: 'span',
       className: 'btn-inline btn-resume',
       inner: '&#9654;',
-      attributes: [{ name: 'data-course', value: info.course }],
+      attributes: [{ name: 'data-class', value: info.class }],
       onclick: onStartButtonClicked
     });
     let removeBtn = createHTMLElement({
       tagName: 'span',
       className: 'btn-inline btn-remove',
       inner: '&times',
-      attributes: [{ name: 'data-course', value: info.course }],
+      attributes: [{ name: 'data-class', value: info.class }],
       onclick: onRemoveButtonClicked
     });
 
@@ -232,7 +232,6 @@
       element.classList.add('register-item-paused');
     } else {
       element.classList.remove('register-item-paused');
-      console.log('removed');
     }
 
     element.children[0].innerText = `[${info.class}] ${info.courseName}`;
@@ -241,9 +240,9 @@
     element.children[3].innerText = `Status: ${info.result ? 'Registered' : info.paused ? 'Paused' : 'Running'} Try: ${info.try}`;
     element.children[4].innerText = `Last message: ${info.message || 'Pending'}`;
 
-    element.children[5].setAttribute('data-course', info.course);
-    element.children[6].setAttribute('data-course', info.course);
-    element.children[7].setAttribute('data-course', info.course);
+    element.children[5].setAttribute('data-class', info.class);
+    element.children[6].setAttribute('data-class', info.class);
+    element.children[7].setAttribute('data-class', info.class);
   }
 
   /**
@@ -353,33 +352,33 @@
   }
 
   /**
-   * Send request to stop the register for the given course id;
+   * Send request to stop the register for the given class id;
    * 
    * @param {number} tabId Id of the tab to stop.
-   * @param {string} course Id of course to stop.
+   * @param {string} clazz Id of class to stop.
    */
-  function stopRegister(tabId, course) {
-    chrome.tabs.sendMessage(tabId, { action: 'stop', course: course });
+  function stopRegister(tabId, clazz) {
+    chrome.tabs.sendMessage(tabId, { action: 'stop', class: clazz });
   }
 
   /**
-   * Send request to start the register for the given course id;
+   * Send request to start the register for the given class id;
    * 
    * @param {number} tabId Id of the tab to start.
-   * @param {string} course Id of course to start. 
+   * @param {string} clazz Id of class to start. 
   */
-  function startRegister(tabId, course) {
-    chrome.tabs.sendMessage(tabId, { action: 'start', course: course });
+  function startRegister(tabId, clazz) {
+    chrome.tabs.sendMessage(tabId, { action: 'start', class: clazz });
   }
 
   /**
-   * Send request to remove the register for the given course id;
+   * Send request to remove the register for the given class id;
    * 
    * @param {number} tabId Id of the tab to remove.
-   * @param {string} course Id of course to remove. 
+   * @param {string} clazz Id of class to remove. 
   */
-  function removeRegister(tabId, course) {
-    chrome.tabs.sendMessage(tabId, { action: 'remove', course: course });
+  function removeRegister(tabId, clazz) {
+    chrome.tabs.sendMessage(tabId, { action: 'remove', class: clazz });
   }
 
   /**
@@ -389,8 +388,8 @@
   */
   function onStopButtonClicked(event) {
     if (currentTab) {
-      let course = event.target.getAttribute('data-course');
-      stopRegister(currentTab.id, course);
+      let clazz = event.target.getAttribute('data-class');
+      stopRegister(currentTab.id, clazz);
     }
   }
 
@@ -401,8 +400,8 @@
    */
   function onStartButtonClicked(event) {
     if (currentTab) {
-      let course = event.target.getAttribute('data-course');
-      startRegister(currentTab.id, course);
+      let clazz = event.target.getAttribute('data-class');
+      startRegister(currentTab.id, clazz);
     }
   }
 
@@ -413,8 +412,8 @@
     */
   function onRemoveButtonClicked(event) {
     if (currentTab) {
-      let course = event.target.getAttribute('data-course');
-      removeRegister(currentTab.id, course);
+      let clazz = event.target.getAttribute('data-class');
+      removeRegister(currentTab.id, clazz);
     }
   }
 
@@ -438,7 +437,7 @@
   }
 
   /**
-   * Listen to template event for the given tab id.
+   * Listen to template event.
    */
   function listenToTemplateEvent() {
     document.getElementById('select-interval').onchange = () => onIntervalChanged();

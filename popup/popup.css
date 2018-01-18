@@ -5,6 +5,7 @@ html {
 body {
     white-space: nowrap;
     margin: 0;
+    width: 500px;
 }
 
 #container {
@@ -56,6 +57,10 @@ body {
 
 .register-item > span:first-child {
     font-weight: bold;
+}
+
+.register-info {
+    text-overflow: ellipsis;
 }
 
 .btn-inline {
